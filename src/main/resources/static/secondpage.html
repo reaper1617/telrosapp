@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Second page</title>
+
+    <!-- Font Awesome Icons -->
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Merriweather+Sans:400,700" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic' rel='stylesheet' type='text/css'>
+
+    <!-- Plugin CSS -->
+    <link href="vendor/magnific-popup/magnific-popup.css" rel="stylesheet">
+
+    <!-- Theme CSS - Includes Bootstrap -->
+    <link href="css/creative.min.css" rel="stylesheet">
+
+</head>
+<style>
+    .overflow{
+        margin-top: 30px;
+        position: center;
+        display: none;
+        height: 60vh;
+        width: 1200px;
+        overflow: auto;
+        border-radius: 30px;
+    }
+
+    .table-text{
+        color: #0b0b0b;
+    }
+    table{
+        background: #d4edda;
+    }
+</style>
+
+<body id="page-top">
+<header class="masthead">
+    <div class="container-fluid">
+        <div class="row h-100 align-items-center justify-content-center text-center">
+            <div class="col-lg-8 align-self-baseline">
+                <p class="text-white-75 font-weight-light mb-5">TELROS</p>
+                <a class="btn btn-primary btn-xl js-scroll-trigger" href="#" onclick="parseJson()">Parse!</a>
+                <a class="btn btn-primary btn-xl js-scroll-trigger" href="/main">To the first page</a>
+                <a class="btn btn-primary btn-xl js-scroll-trigger" href="/logout">Logout</a>
+            </div>
+            <div id="parsed" class=" overflow">
+                <table id="parsedTable" class="table table-text">
+                    <thead>
+                        <th>id</th>
+                        <th>workOrderNum</th>
+                        <th>description</th>
+                        <th>address</th>
+                        <th>immediately</th>
+                        <th>status</th>
+                        <th>statusConfirrmation</th>
+                        <th>mediaConfirmation</th>
+                        <th>startDatePlan</th>
+                        <th>finishDatePlan</th>
+                        <th>startDateFact</th>
+                        <th>finishDateFact</th>
+                        <th>delayed</th>
+                        <th>exceeded</th>
+                        <th>attributes</th>
+                        <th>parentId</th>
+                        <th>requestId</th>
+                        <th>workGroupId</th>
+                        <th>attachmentIds</th>
+                        <th>workItemId</th>
+                        <th>children</th>
+                    </thead>
+                    <tbody id="parsedTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        </div>
+    </div>
+</header>
+
+<script src="vendor/jquery/jquery.min.js"></script>
+<script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+<script src="vendor/magnific-popup/jquery.magnific-popup.min.js"></script>
+<script src="js/creative.min.js"></script>
+
+</body>
+<script>
+
+    function parseJson() {
+        var req = new XMLHttpRequest();
+        req.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                // Typical action to be performed when the document is ready:
+                // document.getElementById("parsed").innerHTML = req.responseText;
+                var dataObject = JSON.parse(req.responseText);
+                // var listItemString = $('#parsed').html();
+                document.getElementById("parsed").style.display = 'block';
+                document.getElementById("parsedTableBody").innerHTML = "";
+                dataObject.forEach(handleRow);
+                function handleRow(row) {
+                    var table = document.getElementById("parsedTableBody");
+                    var tRow = document.createElement("TR");
+                    tRow.classList.add("success");
+                    tRow.innerHTML = getRowString(row);
+                    table.appendChild(tRow);
+                }
+            }
+        };
+        req.open("GET","/parse",true);
+        req.send();
+
+    }
+
+    function getRowString(row) {
+        var finalString = "<td>"+ row.id +"</td>" +
+            "<td>"+ row.workOrderNum +"</td>" +
+            "<td>"+ row.description +"</td>";
+            if (row.address !== undefined){
+                finalString += "<td>"+ row.address.city + "," + row.address.description +"</td>"
+            }
+            else {
+                finalString += "<td>Адрес неизвестен</td>"
+            }
+            finalString += "<td>"+ row.immediately +"</td>" +
+            "<td>"+ row.status +"</td>" +
+            "<td>"+ row.statusConfirmation +"</td>" +
+            "<td>"+ row.mediaConfirmation +"</td>" +
+            "<td>"+ row.startDatePlan +"</td>" +
+            "<td>"+ row.finishDatePlan +"</td>" +
+            "<td>"+ row.startDateFact +"</td>" +
+            "<td>"+ row.finishDateFact +"</td>" +
+            "<td>"+ row.delayed +"</td>" +
+            "<td>"+ row.exceeded +"</td>";
+            if (row.attributes === undefined || row.attributes.length === 0){
+                finalString += "<td>No attributes</td>" ;
+            }
+            else {
+                finalString += "<td>" + JSON.stringify(row.attributes) + "</td>";
+            }
+            finalString += "<td>"+ row.parentId +"</td>" +
+            "<td>"+ row.requestId +"</td>" +
+            "<td>"+ row.workGroupId +"</td>";
+            if (row.attachmentIds === undefined || row.attachmentIds.length === 0){
+                finalString += "<td>No attachments</td>";
+            }
+            else {
+                finalString += "<td>"+ JSON.stringify(row.attachmentIds) +"</td>";
+            }
+            finalString += "<td>"+ row.workItemId +"</td>";
+
+            if (row.children === undefined || row.children.length === 0){
+                finalString += "<td>No children</td>";
+            }
+            else {
+                finalString += "<td>" +
+                        "<div class=\"dropdown\">\n" +
+                    "    <button class=\"btn btn-primary dropdown-toggle\" " +
+                    "type=\"button\" data-toggle=\"dropdown\">Click to see the children\n" +
+                    "    <span class=\"caret\"></span></button>\n" +
+                    "    <ul class=\"dropdown-menu\">\n";
+
+                    for(var i = 0; i < row.children.length; i++){
+                        finalString += "<li><a href=\"#\">ID:" + row.children[i].id +
+                            "; " + row.children[i].description + "</a></li>\n";
+                    }
+                    finalString += "    </ul>\n" +
+                    "  </div>"
+                    + "</td>";
+            }
+        return finalString;
+    }
+</script>
+
+</html>
